@@ -27,9 +27,9 @@
 
   --color-neutral: #334155;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 6px;
   --radius-full: 9999px;
 
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -71,6 +71,94 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+/* ==========================================================================
+   Category Selection Screen
+   ========================================================================== */
+.category-screen {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.category-screen-inner {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  text-align: center;
+}
+
+.category-screen-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.category-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.category-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--text-main);
+  font-family: inherit;
+  transition: all var(--transition-fast);
+}
+
+.category-card:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: var(--bg-hover);
+  transform: translateY(-2px);
+}
+
+.category-card .category-icon {
+  color: var(--accent-cyan);
+  margin-bottom: 2px;
+}
+
+.category-card .category-code {
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--accent-cyan);
+}
+
+.category-card .category-name {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.category-card .category-count {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
+
+@media (max-width: 600px) {
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* ==========================================================================
@@ -127,6 +215,8 @@ body {
 /* Stats in header */
 .session-stats {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -220,7 +310,7 @@ body {
   font-family: var(--font-mono);
   background: rgba(255, 255, 255, 0.08);
   padding: 2px 6px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
 }
 
 .action-group {
@@ -327,14 +417,14 @@ body {
   width: 100%;
   height: 6px;
   background: rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, #38bdf8, #10b981);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   transition: width 0.3s ease;
 }
 
@@ -393,7 +483,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 4px 10px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
 }
 
 .tag-scope {
@@ -489,7 +579,7 @@ body {
   font-size: 0.78rem;
   font-weight: 600;
   padding: 6px 14px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
@@ -569,7 +659,7 @@ body {
 .feedback-icon {
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -653,7 +743,7 @@ body {
   font-size: 0.75rem;
   font-weight: 800;
   padding: 4px 10px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   margin-left: auto;
   flex-shrink: 0;
   letter-spacing: 0.02em;
@@ -910,7 +1000,7 @@ body {
   right: -16px;
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   background: #fff;
   color: #000;
   border: none;

@@ -1,11 +1,26 @@
-# Testy na Prawo Jazdy – Kategoria A
+# Testy na Prawo Jazdy
 
-Aplikacja do prostej, szybkiej nauki i weryfikacji pytań egzaminacyjnych na prawo jazdy **kategorii A** (ogólne i specjalistyczne) na podstawie oficjalnego katalogu Ministerstwa Infrastruktury / WORD: `KATALOG_dla_kandydatów_na_kierowców_072026.xlsx`.
+Aplikacja do prostej, szybkiej nauki i weryfikacji pytań egzaminacyjnych na prawo jazdy (ogólne i specjalistyczne) na podstawie oficjalnego katalogu Ministerstwa Infrastruktury / WORD: `KATALOG_dla_kandydatów_na_kierowców_072026.xlsx`.
+
+## Kategorie
+Po otwarciu aplikacji wybierasz kategorię prawa jazdy, dla której chcesz się uczyć:
+
+| Kategoria | Pytania |
+|---|---|
+| A – Motocykl | 1425 |
+| A1 – Motocykl do 125 cm³ | 1411 |
+| A2 – Motocykl średniej mocy | 1409 |
+| B – Samochód osobowy | 2135 |
+| B1 – Czterokołowiec (quad) | 1421 |
+
+Postępy i statystyki są zapisywane osobno dla każdej kategorii. W każdej chwili można zmienić kategorię przyciskiem "Zmień kategorię" w górnym pasku.
+
+Aby dodać kolejną kategorię (np. C, D, T), dopisz jej kod do listy `CATEGORIES` w `build_dataset.py` oraz w `app.js` i uruchom ponownie `python3 build_dataset.py`.
 
 ## Funkcjonalności
-- **Wszystkie 1425 pytań dla kategorii A**:
-  - **1254 pytania podstawowe (ogólne)**: format TAK / NIE
-  - **171 pytań specjalistycznych**: format A / B / C oraz TAK / NIE
+- **Wszystkie pytania dla wybranej kategorii**, podzielone na:
+  - **pytania podstawowe (ogólne)**: format TAK / NIE
+  - **pytania specjalistyczne**: format A / B / C oraz TAK / NIE
 - **Błyskawiczna walidacja odpowiedzi**:
   - Kliknięcie odpowiedzi natychmiast oznacza odpowiedź jako poprawną (zielony) lub błędną (czerwony) i podświetla właściwą opcję.
   - Przejście do kolejnego pytania za pomocą przycisku lub skrótu klawiaturowego.
@@ -25,9 +40,9 @@ Aplikacja do prostej, szybkiej nauki i weryfikacji pytań egzaminacyjnych na pra
   - Statystyki sesji (poprawne, błędne, skuteczność %)
 
 ## Skróty Klawiszowe
-- `1` lub `T` – wybór **TAK**
-- `2` lub `N` – wybór **NIE**
-- `A` / `B` / `C` lub `1` / `2` / `3` – wybór odpowiedzi w pytaniach wielokrotnego wyboru
+- `1` – wybór **TAK** (w pytaniach TAK/NIE)
+- `2` – wybór **NIE** (w pytaniach TAK/NIE)
+- `1` / `2` / `3` – wybór odpowiedzi A, B lub C (w pytaniach z 3 opcjami – specjalistycznych)
 - `Spacja` / `Enter` / `→` (strzałka w prawo) – **Następne pytanie**
 - `←` (strzałka w lewo) – **Poprzednie pytanie**
 

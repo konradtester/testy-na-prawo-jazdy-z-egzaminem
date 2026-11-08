@@ -5,14 +5,31 @@
 (function() {
   'use strict';
 
-  // 1. Data Initialization
-  const rawQuestions = window.QUESTIONS_KAT_A || [];
-  if (!rawQuestions.length) {
-    console.error('Brak pytań w window.QUESTIONS_KAT_A!');
-  }
+  // 0. Available Categories
+  // Counts are informational only (shown on the selection screen before the
+  // dataset is loaded) — rebuild_dataset.py is the source of truth for data.
+  const CATEGORIES = [
+    { code: 'A', name: 'Motocykl', count: 1425, icon: 'moto' },
+    { code: 'A1', name: 'Motocykl do 125 cm³', count: 1411, icon: 'moto' },
+    { code: 'A2', name: 'Motocykl średniej mocy', count: 1409, icon: 'moto' },
+    { code: 'B', name: 'Samochód osobowy', count: 2135, icon: 'car' },
+    { code: 'B1', name: 'Czterokołowiec (quad)', count: 1421, icon: 'quad' }
+  ];
+  const LAST_CATEGORY_KEY = 'prawo_jazdy_last_category';
+
+  // Icon artwork (inline SVG paths) shown on each category card
+  const CATEGORY_ICONS = {
+    moto: '<circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>',
+    car: '<path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11"/><rect x="3" y="11" width="18" height="5" rx="1.5"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/>',
+    quad: '<circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><circle cx="5" cy="9" r="2"/><circle cx="19" cy="9" r="2"/><path d="M7 9h10M7 18h10M12 5v4M12 13v5"/>'
+  };
 
   // CDN base for media streaming (converted web-optimized MP4 & WebP)
   const CDN_MEDIA_BASE = 'https://f003.backblazeb2.com/file/prawko';
+
+  // 1. Data (populated once a category is chosen and its script is loaded)
+  let rawQuestions = [];
+  let currentCategory = null;
 
   // State
   let currentFilter = 'all'; // 'all' | 'podstawowy' | 'specjalistyczny' | 'mistakes'
@@ -20,9 +37,9 @@
   let activeList = []; // Array of indices into rawQuestions
   let activePointer = 0; // Current position in activeList
 
-  // Persistent Session Data (in localStorage)
-  const STORAGE_KEY = 'prawo_jazdy_kat_a_v1';
-  let sessionData = loadSessionData();
+  // Persistent Session Data (in localStorage) — set once category is chosen
+  let STORAGE_KEY = null;
+  let sessionData = { answers: {}, mistakes: [], lastPointer: 0 };
 
   // DOM Elements
   const elCard = document.getElementById('question-card');
@@ -76,8 +93,95 @@
   const elModalImg = document.getElementById('modal-img');
   const elModalClose = document.getElementById('modal-close');
 
+  // Category screen elements
+  const elCategoryScreen = document.getElementById('category-screen');
+  const elCategoryGrid = document.getElementById('category-grid');
+  const elAppLayout = document.getElementById('app-layout');
+  const elBrandCategory = document.getElementById('brand-category');
+  const elBtnChangeCategory = document.getElementById('btn-change-category');
+
   // Initialize
-  init();
+  initCategoryScreen();
+
+  function initCategoryScreen() {
+    renderCategoryGrid();
+
+    elBtnChangeCategory.addEventListener('click', () => {
+      showCategoryScreen();
+    });
+
+    const lastCategory = localStorage.getItem(LAST_CATEGORY_KEY);
+    const known = CATEGORIES.some(c => c.code === lastCategory);
+    if (lastCategory && known) {
+      loadCategory(lastCategory);
+    } else {
+      showCategoryScreen();
+    }
+  }
+
+  function renderCategoryGrid() {
+    elCategoryGrid.innerHTML = '';
+    CATEGORIES.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'category-card';
+      const iconSvg = CATEGORY_ICONS[cat.icon] || CATEGORY_ICONS.moto;
+      btn.innerHTML = `
+        <svg class="category-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconSvg}</svg>
+        <span class="category-code">${cat.code}</span>
+        <span class="category-name">${cat.name}</span>
+        <span class="category-count">${cat.count} pytań</span>
+      `;
+      btn.addEventListener('click', () => loadCategory(cat.code));
+      elCategoryGrid.appendChild(btn);
+    });
+  }
+
+  function showCategoryScreen() {
+    elCategoryScreen.classList.remove('hidden');
+    elAppLayout.classList.add('hidden');
+  }
+
+  function loadCategory(code) {
+    const globalVar = `QUESTIONS_KAT_${code}`;
+
+    const onDataReady = () => {
+      rawQuestions = window[globalVar] || [];
+      if (!rawQuestions.length) {
+        console.error(`Brak pytań w window.${globalVar}!`);
+      }
+
+      currentCategory = CATEGORIES.find(c => c.code === code) || { code, name: code };
+      STORAGE_KEY = `prawo_jazdy_kat_${code.toLowerCase()}_v1`;
+      sessionData = loadSessionData();
+      localStorage.setItem(LAST_CATEGORY_KEY, code);
+      currentFilter = 'all';
+      isShuffled = false;
+      elShuffleLabel.textContent = 'Kolejno';
+      elBtnShuffle.classList.remove('active-shuffle');
+
+      elBrandCategory.textContent = `Kat. ${code}`;
+      document.title = `Testy Prawo Jazdy Kat. ${code} — Baza Pytań WORD`;
+
+      elCategoryScreen.classList.add('hidden');
+      elAppLayout.classList.remove('hidden');
+
+      init();
+    };
+
+    if (window[globalVar]) {
+      onDataReady();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = `questions_kat_${code.toLowerCase()}.js`;
+    script.onload = onDataReady;
+    script.onerror = () => {
+      alert(`Nie udało się wczytać bazy pytań dla kategorii ${code}.`);
+    };
+    document.body.appendChild(script);
+  }
 
   function init() {
     updateBadgesCounts();
@@ -549,7 +653,12 @@
   // ==========================================================================
   // Event Listeners & Keyboard Shortcuts
   // ==========================================================================
+  let listenersAttached = false;
+
   function attachEventListeners() {
+    if (listenersAttached) return;
+    listenersAttached = true;
+
     // Next / Prev buttons
     elBtnPrev.addEventListener('click', goToPrev);
     elBtnNext.addEventListener('click', goToNext);
@@ -621,6 +730,11 @@
   function handleGlobalKeydown(e) {
     // Ignore keystrokes if typing inside jump input
     if (e.target.tagName === 'INPUT') {
+      return;
+    }
+
+    // Ignore while the category selection screen is showing
+    if (elAppLayout.classList.contains('hidden')) {
       return;
     }
 
