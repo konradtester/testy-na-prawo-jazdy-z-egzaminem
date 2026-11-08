@@ -4,8 +4,9 @@ import os
 import zipfile
 import xml.etree.ElementTree as ET
 
-EXCEL_FILE = "/Users/konradstasiak/gth/testy/KATALOG_dla_kandydatów_na_kierowców_072026.xlsx"
-OUTPUT_DIR = "/Users/konradstasiak/gth/testy"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+EXCEL_FILE = os.path.join(BASE_DIR, "KATALOG_dla_kandydatów_na_kierowców_072026.xlsx")
+OUTPUT_DIR = BASE_DIR
 
 # Categories to generate datasets for. Add more codes here (as they appear in
 # column K of the catalog, e.g. "C", "D", "T", "PT") to support them too.
