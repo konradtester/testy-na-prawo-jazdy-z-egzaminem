@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testy Prawo Jazdy Kat. A — Baza Pytań WORD</title>
+  <meta name="description" content="Prosta i nowoczesna aplikacja do nauki i weryfikacji oficjalnych pytań na prawo jazdy kategorii A (ogólne i specjalistyczne) z multimediami.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18.5" cy="17.5" r="3.5"/>
+            <circle cx="5.5" cy="17.5" r="3.5"/>
+            <circle cx="15" cy="5" r="1"/>
+            <path d="M12 17.5V14l-3-3 4-3 2 3h2"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Prawo Jazdy <span>Kat. A</span></h1>
+          <p class="brand-subtitle">Oficjalny katalog pytań MI / WORD</p>
+        </div>
+      </div>
+
+      <!-- Quick Session Stats -->
+      <div class="session-stats">
+        <div class="stat-pill correct">
+          <span class="stat-label">Poprawne</span>
+          <span id="stat-correct-count" class="stat-val">0</span>
+        </div>
+        <div class="stat-pill wrong">
+          <span class="stat-label">Błędne</span>
+          <span id="stat-wrong-count" class="stat-val">0</span>
+        </div>
+        <div class="stat-pill total">
+          <span class="stat-label">Skuteczność</span>
+          <span id="stat-accuracy" class="stat-val">-%</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Toolbar: Filters & Controls -->
+    <nav class="toolbar" aria-label="Filtry pytań">
+      <div class="filter-group">
+        <button id="filter-all" class="filter-btn active" data-filter="all">
+          Wszystkie <span id="count-all" class="badge">1425</span>
+        </button>
+        <button id="filter-basic" class="filter-btn" data-filter="podstawowy">
+          Ogólne / Podstawowe <span id="count-basic" class="badge">1254</span>
+        </button>
+        <button id="filter-special" class="filter-btn" data-filter="specjalistyczny">
+          Specjalistyczne <span id="count-special" class="badge">171</span>
+        </button>
+        <button id="filter-mistakes" class="filter-btn mistakes-btn" data-filter="mistakes">
+          Do powtórki <span id="count-mistakes" class="badge">0</span>
+        </button>
+      </div>
+
+      <div class="action-group">
+        <button id="btn-shuffle" class="action-btn" title="Przełącz kolejność losową / według numerów">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 3 21 3 21 8"/>
+            <line x1="4" y1="20" x2="21" y2="3"/>
+            <polyline points="21 16 21 21 16 21"/>
+            <line x1="15" y1="15" x2="21" y2="21"/>
+            <line x1="4" y1="4" x2="9" y2="9"/>
+          </svg>
+          <span id="shuffle-label">Kolejno</span>
+        </button>
+
+        <div class="jump-box" title="Skocz do pytania">
+          <span>Skocz do:</span>
+          <input type="number" id="jump-input" min="1" max="1425" placeholder="nr">
+          <button id="jump-btn">Idź</button>
+        </div>
+
+        <button id="btn-reset-stats" class="action-btn text-muted" title="Zresetuj wyniki tej sesji">
+          ↺ Reset
+        </button>
+      </div>
+    </nav>
+
+    <!-- Progress Indicator Bar -->
+    <div class="progress-container">
+      <div class="progress-info">
+        <span id="progress-text">Pytanie 1 z 1425</span>
+        <span id="progress-percent">0% pytań zrobione</span>
+      </div>
+      <div class="progress-bar-track">
+        <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Main Question Card -->
+    <main class="main-content">
+      <article class="question-card" id="question-card">
+        <!-- Card Header Badges -->
+        <div class="card-meta">
+          <div class="meta-tags">
+            <span id="badge-scope" class="tag tag-scope">Podstawowy</span>
+            <span id="badge-points" class="tag tag-points">3 pkt</span>
+            <span id="badge-type" class="tag tag-type">Tak / Nie</span>
+          </div>
+          <div class="meta-id">
+            <span>ID z bazy:</span> <strong id="question-id">#99</strong>
+          </div>
+        </div>
+
+        <!-- Question Text -->
+        <h2 id="question-text" class="question-heading">
+          Ładowanie pytania...
+        </h2>
+
+        <!-- Media Area (Video / Image / Empty) -->
+        <div id="media-wrapper" class="media-container empty">
+          <!-- Video element -->
+          <div id="video-box" class="video-box hidden">
+            <video id="question-video" controls playsinline preload="auto"></video>
+            <div class="video-controls-overlay">
+              <button id="btn-replay-video" class="media-btn" title="Odtwórz wideo od nowa">
+                ↺ Odtwórz ponownie
+              </button>
+            </div>
+          </div>
+
+          <!-- Image element -->
+          <div id="image-box" class="image-box hidden">
+            <img id="question-image" alt="Ilustracja do pytania" loading="lazy">
+            <span class="zoom-hint">🔍 Kliknij, aby powiększyć zdjęcie</span>
+          </div>
+
+          <!-- Media error/fallback banner -->
+          <div id="media-fallback" class="media-fallback hidden">
+            <span class="fallback-icon">ℹ️</span>
+            <span id="media-fallback-text">Plik multimedialny: wmv</span>
+          </div>
+        </div>
+
+        <!-- Feedback Alert Banner -->
+        <div id="feedback-banner" class="feedback-banner hidden" role="alert">
+          <div class="feedback-icon" id="feedback-icon">✓</div>
+          <div class="feedback-details">
+            <div id="feedback-title" class="feedback-title">Prawidłowa odpowiedź!</div>
+            <div id="feedback-sub" class="feedback-sub">Możesz przejść do kolejnego pytania.</div>
+          </div>
+        </div>
+
+        <!-- Answers Area -->
+        <div id="answers-container" class="answers-area answers-yesno">
+          <!-- Dynamic answer buttons injected here -->
+        </div>
+
+        <!-- Navigation Footbar -->
+        <footer class="card-navigation">
+          <button id="btn-prev" class="nav-btn prev-btn" title="Poprzednie pytanie (Strzałka w lewo)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Poprzednie</span>
+          </button>
+
+          <div class="shortcuts-legend">
+            <span>Klawisze:</span>
+            <kbd>1</kbd>/<kbd>T</kbd> lub <kbd>2</kbd>/<kbd>N</kbd> • <kbd>A</kbd>/<kbd>B</kbd>/<kbd>C</kbd> • <kbd>Spacja</kbd>/<kbd>→</kbd> Następne
+          </div>
+
+          <button id="btn-next" class="nav-btn next-btn" title="Następne pytanie (Spacja lub Strzałka w prawo)">
+            <span>Następne</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </footer>
+      </article>
+    </main>
+
+    <!-- Lightbox Image Modal -->
+    <div id="image-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <button id="modal-close" class="modal-close-btn" aria-label="Zamknij podgląd">&times;</button>
+        <img id="modal-img" src="" alt="Powiększone zdjęcie do pytania">
+      </div>
+    </div>
+  </div>
+
+  <!-- Questions dataset and App logic -->
+  <script src="questions_kat_a.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
