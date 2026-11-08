@@ -84,20 +84,67 @@
   const elJumpBtn = document.getElementById('jump-btn');
   const elBtnReset = document.getElementById('btn-reset-stats');
 
+  const elProgressContainer = document.getElementById('progress-container');
   const elProgressText = document.getElementById('progress-text');
   const elProgressPercent = document.getElementById('progress-percent');
   const elProgressBarFill = document.getElementById('progress-bar-fill');
+
+  const elMainToolbar = document.getElementById('main-toolbar');
+  const elCardNavigation = document.getElementById('card-navigation');
+  const elShortcutsLegend = document.getElementById('shortcuts-legend');
 
   // Modal Lightbox elements
   const elModal = document.getElementById('image-modal');
   const elModalImg = document.getElementById('modal-img');
   const elModalClose = document.getElementById('modal-close');
 
+  // Exam mode elements
+  const elBtnStartExam = document.getElementById('btn-start-exam');
+  const elExamBar = document.getElementById('exam-bar');
+  const elExamProgressText = document.getElementById('exam-progress-text');
+  const elExamTimerFill = document.getElementById('exam-timer-fill');
+  const elExamTimerText = document.getElementById('exam-timer-text');
+  const elBtnExitExam = document.getElementById('btn-exit-exam');
+  const elExamResultScreen = document.getElementById('exam-result-screen');
+  const elExamResultBadge = document.getElementById('exam-result-badge');
+  const elExamResultScore = document.getElementById('exam-result-score');
+  const elExamResultSub = document.getElementById('exam-result-sub');
+  const elExamResultBreakdown = document.getElementById('exam-result-breakdown');
+  const elExamResultList = document.getElementById('exam-result-list');
+  const elBtnExamRetry = document.getElementById('btn-exam-retry');
+  const elBtnExamExit = document.getElementById('btn-exam-exit');
+
+  const DEFAULT_SHORTCUTS_LEGEND = `<span>Klawisze:</span> <kbd>1</kbd> TAK • <kbd>2</kbd> NIE • <kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd> wybór odpowiedzi (pytania z 3 opcjami) • <kbd>Spacja</kbd>/<kbd>→</kbd> Następne`;
+  const EXAM_SHORTCUTS_LEGEND = `<span>Egzamin:</span> <kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> wybór odpowiedzi — pytanie zamyka się automatycznie, bez cofania`;
+
+  // Official PL theory exam structure: 32 questions (20 basic + 12 specialist),
+  // weighted 1/2/3 points, max 74 points, pass threshold 68 points.
+  // Basic: 20s per question. Specialist: 50s per question.
+  const EXAM_BASIC_PLAN = [3,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,1,1,1,1];
+  const EXAM_SPECIALIST_PLAN = [3,3,3,3,3,3,2,2,2,2,1,1];
+  const EXAM_PASS_THRESHOLD = 68;
+  const EXAM_TIME_BASIC = 20;
+  const EXAM_TIME_SPECIALIST = 50;
+  // How many of the most recent exams' questions to avoid re-drawing, when a
+  // fresh alternative of the same weight is available.
+  const EXAM_HISTORY_DEPTH = 3;
+
+  let examState = {
+    active: false,
+    questions: [],
+    pointer: 0,
+    answers: [],
+    timerInterval: null,
+    timeLeft: 0,
+    timeTotal: 0
+  };
+
   // Category screen elements
   const elCategoryScreen = document.getElementById('category-screen');
   const elCategoryGrid = document.getElementById('category-grid');
   const elAppLayout = document.getElementById('app-layout');
   const elBrandCategory = document.getElementById('brand-category');
+  const elBrandIconSvg = document.getElementById('brand-icon-svg');
   const elBtnChangeCategory = document.getElementById('btn-change-category');
 
   // Initialize
@@ -107,6 +154,12 @@
     renderCategoryGrid();
 
     elBtnChangeCategory.addEventListener('click', () => {
+      if (examState.active) {
+        if (!confirm('Trwa egzamin. Czy na pewno chcesz go przerwać i zmienić kategorię?')) return;
+        clearInterval(examState.timerInterval);
+        examState.active = false;
+        resetExamUI();
+      }
       showCategoryScreen();
     });
 
@@ -159,8 +212,10 @@
       isShuffled = false;
       elShuffleLabel.textContent = 'Kolejno';
       elBtnShuffle.classList.remove('active-shuffle');
+      resetExamUI();
 
       elBrandCategory.textContent = `Kat. ${code}`;
+      elBrandIconSvg.innerHTML = CATEGORY_ICONS[currentCategory.icon] || CATEGORY_ICONS.moto;
       document.title = `Testy Prawo Jazdy Kat. ${code} — Baza Pytań WORD`;
 
       elCategoryScreen.classList.add('hidden');
@@ -212,7 +267,8 @@
     return {
       answers: {}, // questionId -> { selected: string, isCorrect: boolean }
       mistakes: [], // list of questionIds
-      lastPointer: 0
+      lastPointer: 0,
+      examHistory: [] // array of past exams' question-id arrays, most recent last
     };
   }
 
@@ -651,6 +707,279 @@
   }
 
   // ==========================================================================
+  // Exam Mode (simulates the official PL theory driving exam)
+  // ==========================================================================
+  function resetExamUI() {
+    clearInterval(examState.timerInterval);
+    elExamBar.classList.add('hidden');
+    elMainToolbar.classList.remove('hidden');
+    elProgressContainer.classList.remove('hidden');
+    elCardNavigation.classList.remove('exam-mode');
+    elShortcutsLegend.innerHTML = DEFAULT_SHORTCUTS_LEGEND;
+    elExamResultScreen.classList.add('hidden');
+  }
+
+  function takeFromBucket(bucket, predicate) {
+    for (let i = bucket.length - 1; i >= 0; i--) {
+      if (predicate(bucket[i])) {
+        return bucket.splice(i, 1)[0];
+      }
+    }
+    return null;
+  }
+
+  // avoidIds: questions drawn in recent exams — skipped when a fresh
+  // alternative of the same weight exists, so repeat exams feel varied.
+  function pickQuestionsByPlan(pool, plan, usedIds, avoidIds) {
+    const byPoints = { 1: [], 2: [], 3: [] };
+    pool.forEach(q => {
+      if (!byPoints[q.points]) byPoints[q.points] = [];
+      byPoints[q.points].push(q);
+    });
+    Object.values(byPoints).forEach(shuffleArray);
+
+    const result = [];
+    plan.forEach(pts => {
+      const bucket = byPoints[pts] || [];
+      let picked = takeFromBucket(bucket, q => !usedIds.has(q.id) && !avoidIds.has(q.id));
+      if (!picked) {
+        // No fresh question left at this weight — allow a recently-used one
+        picked = takeFromBucket(bucket, q => !usedIds.has(q.id));
+      }
+      if (!picked) {
+        // Fallback: pool exhausted for this exact weight, grab any unused question
+        picked = pool.find(q => !usedIds.has(q.id));
+      }
+      if (picked) {
+        usedIds.add(picked.id);
+        result.push(picked);
+      }
+    });
+    return result;
+  }
+
+  function buildExamSet() {
+    const basicPool = rawQuestions.filter(q => q.scope === 'podstawowy');
+    const specialistPool = rawQuestions.filter(q => q.scope === 'specjalistyczny');
+    const usedIds = new Set();
+    const avoidIds = new Set();
+    (sessionData.examHistory || []).forEach(examIds => {
+      examIds.forEach(id => avoidIds.add(id));
+    });
+    const basicQs = pickQuestionsByPlan(basicPool, EXAM_BASIC_PLAN, usedIds, avoidIds);
+    const specialistQs = pickQuestionsByPlan(specialistPool, EXAM_SPECIALIST_PLAN, usedIds, avoidIds);
+    return basicQs.concat(specialistQs);
+  }
+
+  function recordExamHistory(questions) {
+    if (!sessionData.examHistory) sessionData.examHistory = [];
+    sessionData.examHistory.push(questions.map(q => q.id));
+    if (sessionData.examHistory.length > EXAM_HISTORY_DEPTH) {
+      sessionData.examHistory = sessionData.examHistory.slice(-EXAM_HISTORY_DEPTH);
+    }
+    saveSessionData();
+  }
+
+  function startExam() {
+    const requiredTotal = EXAM_BASIC_PLAN.length + EXAM_SPECIALIST_PLAN.length;
+    const basicAvailable = rawQuestions.filter(q => q.scope === 'podstawowy').length;
+    const specialistAvailable = rawQuestions.filter(q => q.scope === 'specjalistyczny').length;
+    if (basicAvailable < EXAM_BASIC_PLAN.length || specialistAvailable < EXAM_SPECIALIST_PLAN.length) {
+      alert('Za mało pytań w tej kategorii, by zasymulować pełny egzamin.');
+      return;
+    }
+
+    const examQuestions = buildExamSet();
+    if (examQuestions.length < requiredTotal) {
+      alert('Nie udało się zebrać pełnego zestawu pytań egzaminacyjnych dla tej kategorii.');
+      return;
+    }
+    recordExamHistory(examQuestions);
+
+    examState = {
+      active: true,
+      questions: examQuestions,
+      pointer: 0,
+      answers: new Array(examQuestions.length).fill(null),
+      timerInterval: null,
+      timeLeft: 0,
+      timeTotal: 0
+    };
+
+    elMainToolbar.classList.add('hidden');
+    elProgressContainer.classList.add('hidden');
+    elExamBar.classList.remove('hidden');
+    elCardNavigation.classList.add('exam-mode');
+    elShortcutsLegend.innerHTML = EXAM_SHORTCUTS_LEGEND;
+
+    renderExamQuestion();
+  }
+
+  function renderExamQuestion() {
+    const q = examState.questions[examState.pointer];
+    if (!q) {
+      finishExam();
+      return;
+    }
+
+    elQuestionId.textContent = `#${q.id}`;
+    elBadgeScope.textContent = q.scope === 'podstawowy' ? 'Podstawowy (Ogólne)' : 'Specjalistyczny';
+    elBadgeScope.className = `tag tag-scope ${q.scope}`;
+    elBadgePoints.textContent = `${q.points} ${q.points === 1 ? 'pkt' : 'punkty'}`;
+    elBadgeType.textContent = q.type === 'yes_no' ? 'Tak / Nie' : 'Wybór A / B / C';
+    elQuestionText.textContent = q.question;
+
+    renderMedia(q);
+
+    elFeedback.className = 'feedback-banner hidden';
+    elAnswers.innerHTML = '';
+    elAnswers.className = q.type === 'yes_no' ? 'answers-area answers-yesno' : 'answers-area answers-abc';
+
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'answer-btn';
+      btn.dataset.key = opt.key;
+      btn.innerHTML = `
+        <span class="answer-key-pill">${opt.key}</span>
+        <span class="answer-text">${opt.text}</span>
+      `;
+      btn.addEventListener('click', () => handleExamAnswerSelect(opt.key));
+      elAnswers.appendChild(btn);
+    });
+
+    elExamProgressText.textContent = `Pytanie ${examState.pointer + 1} z ${examState.questions.length}`;
+
+    startExamTimer(q);
+  }
+
+  function startExamTimer(q) {
+    clearInterval(examState.timerInterval);
+    const totalSeconds = q.scope === 'podstawowy' ? EXAM_TIME_BASIC : EXAM_TIME_SPECIALIST;
+    examState.timeLeft = totalSeconds;
+    examState.timeTotal = totalSeconds;
+    updateExamTimerUI();
+
+    examState.timerInterval = setInterval(() => {
+      examState.timeLeft--;
+      updateExamTimerUI();
+      if (examState.timeLeft <= 0) {
+        clearInterval(examState.timerInterval);
+        handleExamAnswerSelect(null);
+      }
+    }, 1000);
+  }
+
+  function updateExamTimerUI() {
+    elExamTimerText.textContent = `${Math.max(0, examState.timeLeft)}s`;
+    const pct = examState.timeTotal > 0 ? Math.max(0, (examState.timeLeft / examState.timeTotal) * 100) : 0;
+    elExamTimerFill.style.width = `${pct}%`;
+    elExamTimerFill.classList.toggle('exam-timer-urgent', examState.timeLeft <= 5);
+  }
+
+  function handleExamAnswerSelect(selectedKey) {
+    if (!examState.active) return;
+    if (examState.answers[examState.pointer]) return; // already answered
+
+    clearInterval(examState.timerInterval);
+    const q = examState.questions[examState.pointer];
+    const isCorrect = selectedKey !== null && selectedKey === q.correct;
+
+    examState.answers[examState.pointer] = {
+      selected: selectedKey,
+      isCorrect: isCorrect,
+      points: isCorrect ? q.points : 0
+    };
+
+    elAnswers.querySelectorAll('.answer-btn').forEach(btn => {
+      btn.disabled = true;
+      if (btn.dataset.key === selectedKey) {
+        btn.classList.add('state-selected-exam');
+      }
+    });
+
+    setTimeout(() => {
+      examState.pointer++;
+      if (examState.pointer >= examState.questions.length) {
+        finishExam();
+      } else {
+        renderExamQuestion();
+      }
+    }, 350);
+  }
+
+  function finishExam() {
+    clearInterval(examState.timerInterval);
+    examState.active = false;
+
+    // Feed wrong/unanswered exam questions into the "Do powtórki" mistakes list
+    examState.questions.forEach((q, i) => {
+      const a = examState.answers[i];
+      if (!a || !a.isCorrect) {
+        if (!sessionData.mistakes.includes(q.id)) {
+          sessionData.mistakes.push(q.id);
+        }
+      }
+    });
+    saveSessionData();
+    updateBadgesCounts();
+
+    renderExamResult();
+
+    elExamBar.classList.add('hidden');
+    elAppLayout.classList.add('hidden');
+    elExamResultScreen.classList.remove('hidden');
+  }
+
+  function renderExamResult() {
+    const totalPoints = examState.answers.reduce((sum, a) => sum + (a ? a.points : 0), 0);
+    const maxPoints = examState.questions.reduce((sum, q) => sum + q.points, 0);
+    const passed = totalPoints >= EXAM_PASS_THRESHOLD;
+    const correctCount = examState.answers.filter(a => a && a.isCorrect).length;
+    const wrongCount = examState.questions.length - correctCount;
+
+    elExamResultBadge.textContent = passed ? 'ZDANE' : 'NIEZDANE';
+    elExamResultBadge.className = `exam-result-badge ${passed ? 'pass' : 'fail'}`;
+    elExamResultScore.textContent = `${totalPoints} / ${maxPoints} pkt`;
+    elExamResultSub.textContent = `Próg zdawalności: ${EXAM_PASS_THRESHOLD} pkt na ${maxPoints} możliwych`;
+
+    elExamResultBreakdown.innerHTML = `
+      <div class="stat-pill correct">
+        <span class="stat-label">Poprawne</span>
+        <span class="stat-val">${correctCount}</span>
+      </div>
+      <div class="stat-pill wrong">
+        <span class="stat-label">Błędne</span>
+        <span class="stat-val">${wrongCount}</span>
+      </div>
+    `;
+
+    elExamResultList.innerHTML = '';
+    examState.questions.forEach((q, i) => {
+      const a = examState.answers[i];
+      const isCorrect = !!(a && a.isCorrect);
+      const correctOpt = q.options.find(o => o.key === q.correct);
+      const correctLabel = correctOpt ? (q.type === 'yes_no' ? correctOpt.text : `${correctOpt.key} — ${correctOpt.text}`) : q.correct;
+
+      const row = document.createElement('div');
+      row.className = `exam-result-row ${isCorrect ? 'correct' : 'wrong'}`;
+      row.innerHTML = `
+        <span class="exam-row-status">${isCorrect ? '✓' : '✗'}</span>
+        <span class="exam-row-text">#${q.id} — ${q.question}${!isCorrect ? `<br><span style="color: var(--color-correct)">Poprawna odpowiedź: ${correctLabel}</span>` : ''}</span>
+        <span class="exam-row-points">${a ? a.points : 0}/${q.points} pkt</span>
+      `;
+      elExamResultList.appendChild(row);
+    });
+  }
+
+  function exitExamToTestMode() {
+    resetExamUI();
+    elExamResultScreen.classList.add('hidden');
+    elAppLayout.classList.remove('hidden');
+    renderCurrentQuestion();
+  }
+
+  // ==========================================================================
   // Event Listeners & Keyboard Shortcuts
   // ==========================================================================
   let listenersAttached = false;
@@ -723,6 +1052,24 @@
     // Reset Button
     elBtnReset.addEventListener('click', resetSessionStats);
 
+    // Exam Mode
+    elBtnStartExam.addEventListener('click', startExam);
+
+    elBtnExitExam.addEventListener('click', () => {
+      if (!confirm('Czy na pewno chcesz zakończyć egzamin przed czasem? Nieodpowiedziane pytania liczą się jako błędne.')) {
+        return;
+      }
+      finishExam();
+    });
+
+    elBtnExamRetry.addEventListener('click', () => {
+      elExamResultScreen.classList.add('hidden');
+      elAppLayout.classList.remove('hidden');
+      startExam();
+    });
+
+    elBtnExamExit.addEventListener('click', exitExamToTestMode);
+
     // Keyboard Shortcuts
     window.addEventListener('keydown', handleGlobalKeydown);
   }
@@ -744,6 +1091,35 @@
         elModal.classList.add('hidden');
         return;
       }
+    }
+
+    // Exam mode: answer shortcuts only — no going back, no manual "next"
+    if (examState.active) {
+      const q = examState.questions[examState.pointer];
+      if (!q || examState.answers[examState.pointer]) return;
+
+      const examKey = e.key.toUpperCase();
+      if (q.type === 'yes_no') {
+        if (examKey === '1' || examKey === 'T') {
+          e.preventDefault();
+          handleExamAnswerSelect('T');
+        } else if (examKey === '2' || examKey === 'N') {
+          e.preventDefault();
+          handleExamAnswerSelect('N');
+        }
+      } else if (q.type === 'abc') {
+        if (examKey === '1' || examKey === 'A') {
+          e.preventDefault();
+          handleExamAnswerSelect('A');
+        } else if (examKey === '2' || examKey === 'B') {
+          e.preventDefault();
+          handleExamAnswerSelect('B');
+        } else if (examKey === '3' || examKey === 'C') {
+          e.preventDefault();
+          handleExamAnswerSelect('C');
+        }
+      }
+      return;
     }
 
     // Left Arrow: Previous

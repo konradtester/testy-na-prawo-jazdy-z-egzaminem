@@ -212,6 +212,61 @@ body {
   color: var(--text-muted);
 }
 
+.navbar-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.navbar-divider {
+  width: 1px;
+  align-self: stretch;
+  min-height: 28px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.navbar-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.navbar-btn-exam {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(99, 102, 241, 0.22));
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #e9d5ff;
+}
+
+.navbar-btn-exam:hover {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(99, 102, 241, 0.35));
+  border-color: rgba(168, 85, 247, 0.6);
+  color: #fff;
+}
+
 /* Stats in header */
 .session-stats {
   display: flex;
@@ -313,10 +368,23 @@ body {
   border-radius: var(--radius-sm);
 }
 
+.toolbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  align-self: stretch;
+  min-height: 24px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .action-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .action-btn {
@@ -361,31 +429,34 @@ body {
   align-items: center;
   gap: 6px;
   font-size: 0.78rem;
-  color: var(--text-muted);
+  color: var(--text-dim);
+  background: var(--bg-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 4px 4px 4px 10px;
+}
+
+.jump-box svg {
+  flex-shrink: 0;
+  color: var(--text-dim);
 }
 
 .jump-box input {
-  width: 58px;
-  padding: 5px 8px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-sm);
+  width: 72px;
+  padding: 5px 4px;
+  background: transparent;
+  border: none;
   color: var(--text-main);
   font-family: var(--font-mono);
   font-size: 0.82rem;
-  text-align: center;
   outline: none;
 }
 
-.jump-box input:focus {
-  border-color: var(--accent-cyan);
-}
-
 .jump-box button {
-  background: var(--bg-subtle);
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-main);
-  padding: 5px 8px;
+  padding: 6px 12px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.75rem;
@@ -426,6 +497,182 @@ body {
   background: linear-gradient(90deg, #38bdf8, #10b981);
   border-radius: var(--radius-sm);
   transition: width 0.3s ease;
+}
+
+/* ==========================================================================
+   Exam Mode
+   ========================================================================== */
+
+.exam-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 12px 16px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: var(--radius-md);
+}
+
+.exam-bar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.exam-bar-info #exam-progress-text {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 0.9rem;
+}
+
+.exam-bar-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.exam-timer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 160px;
+}
+
+.exam-timer-track {
+  width: 120px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.exam-timer-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #a855f7, #38bdf8);
+  transition: width 1s linear, background 0.3s ease;
+}
+
+.exam-timer-fill.exam-timer-urgent {
+  background: linear-gradient(90deg, var(--color-wrong), #fb7185);
+}
+
+#exam-timer-text {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* Exam Result Screen */
+.exam-result-badge {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 10px 24px;
+  border-radius: var(--radius-sm);
+}
+
+.exam-result-badge.pass {
+  background: var(--color-correct-bg);
+  border: 1px solid var(--color-correct);
+  color: #34d399;
+}
+
+.exam-result-badge.fail {
+  background: var(--color-wrong-bg);
+  border: 1px solid var(--color-wrong);
+  color: #fb7185;
+}
+
+.exam-result-score {
+  font-size: 2rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text-main);
+}
+
+.exam-result-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.exam-result-breakdown {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.exam-result-breakdown .stat-pill {
+  min-width: 120px;
+}
+
+.exam-result-list {
+  width: 100%;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px;
+  text-align: left;
+}
+
+.exam-result-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.85rem;
+}
+
+.exam-result-row .exam-row-status {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.exam-result-row.correct .exam-row-status {
+  background: var(--color-correct);
+  color: #064e3b;
+}
+
+.exam-result-row.wrong .exam-row-status {
+  background: var(--color-wrong);
+  color: #fff;
+}
+
+.exam-result-row .exam-row-text {
+  flex: 1;
+  color: var(--text-muted);
+}
+
+.exam-result-row .exam-row-points {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+
+.exam-result-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 /* ==========================================================================
@@ -881,6 +1128,23 @@ body {
   cursor: default;
 }
 
+/* Exam mode: selection is locked but not revealed as correct/wrong */
+.answer-btn.state-selected-exam {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border-color: var(--accent-cyan) !important;
+}
+
+.answer-btn.state-selected-exam .answer-key-pill {
+  background: var(--accent-cyan);
+  color: #041b2d;
+  border-color: var(--accent-cyan);
+}
+
+.card-navigation.exam-mode .prev-btn,
+.card-navigation.exam-mode .next-btn {
+  display: none;
+}
+
 /* ==========================================================================
    Card Navigation Footer
    ========================================================================== */
@@ -1014,6 +1278,33 @@ body {
 }
 
 /* ==========================================================================
+   Site Footer
+   ========================================================================== */
+.site-footer {
+  position: fixed;
+  right: 14px;
+  bottom: 10px;
+  z-index: 10;
+  font-size: 0.72rem;
+}
+
+.site-footer a {
+  color: var(--text-dim);
+  text-decoration: none;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(6px);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.site-footer a:hover {
+  color: var(--accent-cyan);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+/* ==========================================================================
    Utility Classes & Responsiveness
    ========================================================================== */
 .hidden {
@@ -1027,6 +1318,7 @@ body {
 
   .navbar {
     padding: 10px 14px;
+    flex-wrap: wrap;
   }
 
   .brand-title {
@@ -1036,6 +1328,19 @@ body {
   .brand-icon {
     width: 36px;
     height: 36px;
+  }
+
+  .navbar-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .navbar-divider {
+    display: none;
+  }
+
+  .navbar-btn span {
+    display: none;
   }
 
   .session-stats {
@@ -1058,6 +1363,10 @@ body {
   .toolbar {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .toolbar-divider {
+    display: none;
   }
 
   .action-group {

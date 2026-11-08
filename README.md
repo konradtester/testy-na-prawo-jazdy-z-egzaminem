@@ -17,6 +17,15 @@ Postępy i statystyki są zapisywane osobno dla każdej kategorii. W każdej chw
 
 Aby dodać kolejną kategorię (np. C, D, T), dopisz jej kod do listy `CATEGORIES` w `build_dataset.py` oraz w `app.js` i uruchom ponownie `python3 build_dataset.py`.
 
+## Tryb Testy vs. Tryb Egzamin
+- **Tryb Testy** (domyślny): swobodna nauka — natychmiastowy feedback po każdej odpowiedzi, filtry, losowanie, skok do dowolnego pytania, bez limitu czasu.
+- **Tryb Egzamin**: wierna symulacja oficjalnego egzaminu teoretycznego WORD, uruchamiana przyciskiem "Tryb Egzamin" w toolbarze:
+  - **32 pytania**: 20 podstawowych + 12 specjalistycznych, losowane z odpowiednią wagą punktową (10×3pkt + 6×2pkt + 4×1pkt dla podstawowych; 6×3pkt + 4×2pkt + 2×1pkt dla specjalistycznych).
+  - **Limit czasu**: 20 s na pytanie podstawowe, 50 s na specjalistyczne — po upływie czasu pytanie liczy się jako błędne i egzamin przechodzi dalej automatycznie.
+  - **Bez podglądu poprawnych odpowiedzi w trakcie** i **bez cofania się** do zamkniętego pytania — tak jak na prawdziwym egzaminie.
+  - **Wynik końcowy**: suma punktów (max 74), próg zdawalności **68 pkt**, pełna lista 32 pytań z zaznaczeniem błędów i poprawnych odpowiedzi.
+  - Błędnie odpowiedziane pytania z egzaminu trafiają automatycznie do filtra "Do powtórki" w Trybie Testy.
+
 ## Funkcjonalności
 - **Wszystkie pytania dla wybranej kategorii**, podzielone na:
   - **pytania podstawowe (ogólne)**: format TAK / NIE

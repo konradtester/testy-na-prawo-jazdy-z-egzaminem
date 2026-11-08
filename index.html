@@ -1,3 +1,4 @@
+<!-- Made by bugbegone.pl — https://bugbegone.pl -->
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -5,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Testy Prawo Jazdy — Baza Pytań WORD</title>
   <meta name="description" content="Prosta i nowoczesna aplikacja do nauki i weryfikacji pytań na prawo jazdy (ogólne i specjalistyczne) z multimediami, na podstawie katalogu pytań MI / WORD.">
+  <meta name="author" content="bugbegone.pl">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -41,7 +43,7 @@
     <header class="navbar">
       <div class="brand">
         <div class="brand-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg id="brand-icon-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="18.5" cy="17.5" r="3.5"/>
             <circle cx="5.5" cy="17.5" r="3.5"/>
             <circle cx="15" cy="5" r="1"/>
@@ -54,28 +56,46 @@
         </div>
       </div>
 
-      <!-- Quick Session Stats -->
-      <div class="session-stats">
-        <button id="btn-change-category" class="action-btn" title="Wybierz inną kategorię prawa jazdy">
-          Zmień kategorię
-        </button>
-        <div class="stat-pill correct">
-          <span class="stat-label">Poprawne</span>
-          <span id="stat-correct-count" class="stat-val">0</span>
+      <div class="navbar-right">
+        <!-- Quick Session Stats -->
+        <div class="session-stats">
+          <div class="stat-pill correct">
+            <span class="stat-label">Poprawne</span>
+            <span id="stat-correct-count" class="stat-val">0</span>
+          </div>
+          <div class="stat-pill wrong">
+            <span class="stat-label">Błędne</span>
+            <span id="stat-wrong-count" class="stat-val">0</span>
+          </div>
+          <div class="stat-pill total">
+            <span class="stat-label">Skuteczność</span>
+            <span id="stat-accuracy" class="stat-val">-%</span>
+          </div>
         </div>
-        <div class="stat-pill wrong">
-          <span class="stat-label">Błędne</span>
-          <span id="stat-wrong-count" class="stat-val">0</span>
-        </div>
-        <div class="stat-pill total">
-          <span class="stat-label">Skuteczność</span>
-          <span id="stat-accuracy" class="stat-val">-%</span>
+
+        <div class="navbar-divider"></div>
+
+        <!-- Mode / Category Actions -->
+        <div class="navbar-actions">
+          <button id="btn-change-category" class="navbar-btn" title="Wybierz inną kategorię prawa jazdy">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 3h5v5M21 3l-7 7M8 21H3v-5M3 21l7-7"/>
+            </svg>
+            <span>Zmień kategorię</span>
+          </button>
+          <button id="btn-start-exam" class="navbar-btn navbar-btn-exam" title="Rozpocznij symulację prawdziwego egzaminu (32 pytania, limit czasu, bez podglądu odpowiedzi)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3 2 8l10 5 10-5-10-5z"/>
+              <path d="M6 10.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5"/>
+            </svg>
+            <span>Tryb Egzamin</span>
+          </button>
         </div>
       </div>
     </header>
 
     <!-- Toolbar: Filters & Controls -->
-    <nav class="toolbar" aria-label="Filtry pytań">
+    <nav id="main-toolbar" class="toolbar" aria-label="Filtry pytań">
       <div class="filter-group">
         <button id="filter-all" class="filter-btn active" data-filter="all">
           Wszystkie <span id="count-all" class="badge">0</span>
@@ -91,32 +111,41 @@
         </button>
       </div>
 
-      <div class="action-group">
-        <button id="btn-shuffle" class="action-btn" title="Przełącz kolejność losową / według numerów">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="16 3 21 3 21 8"/>
-            <line x1="4" y1="20" x2="21" y2="3"/>
-            <polyline points="21 16 21 21 16 21"/>
-            <line x1="15" y1="15" x2="21" y2="21"/>
-            <line x1="4" y1="4" x2="9" y2="9"/>
-          </svg>
-          <span id="shuffle-label">Kolejno</span>
-        </button>
+      <div class="toolbar-tools">
+        <div class="toolbar-divider"></div>
 
-        <div class="jump-box" title="Skocz do pytania">
-          <span>Skocz do:</span>
-          <input type="number" id="jump-input" min="1" max="1" placeholder="nr">
-          <button id="jump-btn">Idź</button>
+        <div class="action-group">
+          <button id="btn-shuffle" class="action-btn" title="Przełącz kolejność losową / według numerów">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 3 21 3 21 8"/>
+              <line x1="4" y1="20" x2="21" y2="3"/>
+              <polyline points="21 16 21 21 16 21"/>
+              <line x1="15" y1="15" x2="21" y2="21"/>
+              <line x1="4" y1="4" x2="9" y2="9"/>
+            </svg>
+            <span id="shuffle-label">Kolejno</span>
+          </button>
+
+          <div class="jump-box" title="Skocz do pytania">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+            <input type="number" id="jump-input" min="1" max="1" placeholder="Numer">
+            <button id="jump-btn">Idź</button>
+          </div>
+
+          <button id="btn-reset-stats" class="action-btn text-muted" title="Zresetuj wyniki tej sesji">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/>
+            </svg>
+            <span>Reset</span>
+          </button>
         </div>
-
-        <button id="btn-reset-stats" class="action-btn text-muted" title="Zresetuj wyniki tej sesji">
-          ↺ Reset
-        </button>
       </div>
     </nav>
 
-    <!-- Progress Indicator Bar -->
-    <div class="progress-container">
+    <!-- Progress Indicator Bar (Tryb Testy) -->
+    <div id="progress-container" class="progress-container">
       <div class="progress-info">
         <span id="progress-text">Pytanie 1 z 1</span>
         <span id="progress-percent">0% pytań zrobione</span>
@@ -124,6 +153,21 @@
       <div class="progress-bar-track">
         <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
       </div>
+    </div>
+
+    <!-- Exam Bar (Tryb Egzamin) -->
+    <div id="exam-bar" class="exam-bar hidden">
+      <div class="exam-bar-info">
+        <span id="exam-progress-text">Pytanie 1 z 32</span>
+        <span class="exam-bar-hint">Egzamin — bez podglądu poprawnych odpowiedzi, bez cofania</span>
+      </div>
+      <div class="exam-timer">
+        <div class="exam-timer-track">
+          <div id="exam-timer-fill" class="exam-timer-fill"></div>
+        </div>
+        <span id="exam-timer-text">20s</span>
+      </div>
+      <button id="btn-exit-exam" class="action-btn text-muted">Zakończ egzamin</button>
     </div>
 
     <!-- Main Question Card -->
@@ -186,7 +230,7 @@
         </div>
 
         <!-- Navigation Footbar -->
-        <footer class="card-navigation">
+        <footer id="card-navigation" class="card-navigation">
           <button id="btn-prev" class="nav-btn prev-btn" title="Poprzednie pytanie (Strzałka w lewo)">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -194,7 +238,7 @@
             <span>Poprzednie</span>
           </button>
 
-          <div class="shortcuts-legend">
+          <div id="shortcuts-legend" class="shortcuts-legend">
             <span>Klawisze:</span>
             <kbd>1</kbd> TAK • <kbd>2</kbd> NIE • <kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd> wybór odpowiedzi (pytania z 3 opcjami) • <kbd>Spacja</kbd>/<kbd>→</kbd> Następne
           </div>
@@ -217,6 +261,33 @@
       </div>
     </div>
   </div>
+
+  <!-- Exam Result Screen -->
+  <div id="exam-result-screen" class="category-screen hidden">
+    <div class="category-screen-inner">
+      <div id="exam-result-badge" class="exam-result-badge">ZDANE</div>
+      <div id="exam-result-score" class="exam-result-score">68 / 74 pkt</div>
+      <p id="exam-result-sub" class="exam-result-sub">Próg zdawalności: 68 pkt na 74 możliwych</p>
+
+      <div id="exam-result-breakdown" class="exam-result-breakdown">
+        <!-- Filled by app.js -->
+      </div>
+
+      <div id="exam-result-list" class="exam-result-list">
+        <!-- List of all 32 questions with correct/wrong status, filled by app.js -->
+      </div>
+
+      <div class="exam-result-actions">
+        <button id="btn-exam-retry" class="action-btn">Zdawaj ponownie</button>
+        <button id="btn-exam-exit" class="action-btn">Wróć do Trybu Testy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <a href="https://bugbegone.pl" target="_blank" rel="noopener noreferrer">bugbegone.pl</a>
+  </footer>
 
   <!-- App logic (loads the chosen category's question dataset dynamically) -->
   <script src="app.js"></script>
