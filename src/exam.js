@@ -14,9 +14,6 @@ import { shuffleArray, updateBadgesCounts } from './filters.js';
 import { saveSessionData } from './session.js';
 import { renderCurrentQuestion } from './test-mode.js';
 
-// ==========================================================================
-// Tryb Egzamin (simulates the official PL theory driving exam)
-// ==========================================================================
 export function resetExamUI() {
   clearInterval(state.examState.timerInterval);
   elExamBar.classList.add('hidden');
@@ -187,7 +184,7 @@ function updateExamTimerUI() {
 
 export function handleExamAnswerSelect(selectedKey) {
   if (!state.examState.active) return;
-  if (state.examState.answers[state.examState.pointer]) return; // already answered
+  if (state.examState.answers[state.examState.pointer]) return;
 
   clearInterval(state.examState.timerInterval);
   const q = state.examState.questions[state.examState.pointer];

@@ -9,9 +9,6 @@ import { init } from './test-mode.js';
 import { resetExamUI } from './exam.js';
 import { attachEventListeners } from './events.js';
 
-// ==========================================================================
-// Category Selection Screen & Dataset Loading
-// ==========================================================================
 export function initCategoryScreen() {
   renderCategoryGrid();
 

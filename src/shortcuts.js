@@ -3,21 +3,15 @@ import { elAppLayout, elModal } from './dom.js';
 import { goToPrev, goToNext, handleAnswerSelect } from './test-mode.js';
 import { handleExamAnswerSelect } from './exam.js';
 
-// ==========================================================================
-// Keyboard Shortcuts
-// ==========================================================================
 export function handleGlobalKeydown(e) {
-  // Ignore keystrokes if typing inside jump input
   if (e.target.tagName === 'INPUT') {
     return;
   }
 
-  // Ignore while the category selection screen is showing
   if (elAppLayout.classList.contains('hidden')) {
     return;
   }
 
-  // Modal close on Escape
   if (e.key === 'Escape') {
     if (!elModal.classList.contains('hidden')) {
       elModal.classList.add('hidden');
@@ -25,7 +19,8 @@ export function handleGlobalKeydown(e) {
     }
   }
 
-  // Exam mode: answer shortcuts only — no going back, no manual "next"
+  // Exam mode: answer shortcuts only — no going back, no manual "next",
+  // mirroring the real exam's rules.
   if (state.examState.active) {
     const q = state.examState.questions[state.examState.pointer];
     if (!q || state.examState.answers[state.examState.pointer]) return;
@@ -54,21 +49,18 @@ export function handleGlobalKeydown(e) {
     return;
   }
 
-  // Left Arrow: Previous
   if (e.key === 'ArrowLeft') {
     e.preventDefault();
     goToPrev();
     return;
   }
 
-  // Right Arrow, Space, or Enter: Next
   if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
     e.preventDefault();
     goToNext();
     return;
   }
 
-  // Question answers shortcuts
   if (!state.activeList.length) return;
   const qIndex = state.activeList[state.activePointer];
   const q = state.rawQuestions[qIndex];

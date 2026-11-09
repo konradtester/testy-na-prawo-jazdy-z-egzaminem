@@ -11,14 +11,10 @@ import { renderMedia } from './media.js';
 import { saveSessionData } from './session.js';
 import { updateBadgesCounts, applyFilter } from './filters.js';
 
-// ==========================================================================
-// Tryb Testy: lifecycle, question rendering, navigation & stats
-// ==========================================================================
 export function init() {
   updateBadgesCounts();
   applyFilter(state.currentFilter);
 
-  // Restore saved question pointer if valid
   if (state.sessionData.lastPointer >= 0 && state.sessionData.lastPointer < state.activeList.length) {
     state.activePointer = state.sessionData.lastPointer;
   }
@@ -33,7 +29,6 @@ export function renderCurrentQuestion() {
     return;
   }
 
-  // Clamp pointer
   if (state.activePointer < 0) state.activePointer = 0;
   if (state.activePointer >= state.activeList.length) state.activePointer = state.activeList.length - 1;
 
@@ -41,7 +36,6 @@ export function renderCurrentQuestion() {
   const q = state.rawQuestions[qIndex];
   if (!q) return;
 
-  // 1. Meta Badges
   elQuestionId.textContent = `#${q.id}`;
   elBadgeScope.textContent = q.scope === 'podstawowy' ? 'Podstawowy (Ogólne)' : 'Specjalistyczny';
   elBadgeScope.className = `tag tag-scope ${q.scope}`;
@@ -49,20 +43,14 @@ export function renderCurrentQuestion() {
   elBadgePoints.textContent = `${q.points} ${q.points === 1 ? 'pkt' : 'punkty'}`;
   elBadgeType.textContent = q.type === 'yes_no' ? 'Tak / Nie' : 'Wybór A / B / C';
 
-  // 2. Question Text
   elQuestionText.textContent = q.question;
 
-  // 3. Media Handling
   renderMedia(q);
-
-  // 4. Answers Area
   renderAnswers(q);
 
-  // 5. Navigation buttons
   elBtnPrev.disabled = state.activePointer === 0;
   elBtnNext.disabled = state.activePointer === state.activeList.length - 1;
 
-  // 6. Update progress bar
   updateProgressBar();
 
   saveSessionData();
@@ -93,7 +81,6 @@ export function renderAnswers(q) {
   const recorded = state.sessionData.answers[q.id];
   const isAnswered = !!recorded;
 
-  // Reset feedback banner
   if (isAnswered) {
     showFeedbackBanner(q, recorded.isCorrect, recorded.selected);
     elBtnNext.classList.add('pulse');
@@ -135,17 +122,13 @@ export function renderAnswers(q) {
   });
 }
 
-// ==========================================================================
-// Answer Evaluation
-// ==========================================================================
 export function handleAnswerSelect(q, selectedKey) {
   if (state.sessionData.answers[q.id]) {
-    return; // Already answered
+    return;
   }
 
   const isCorrect = selectedKey === q.correct;
 
-  // Record answer
   state.sessionData.answers[q.id] = {
     selected: selectedKey,
     isCorrect: isCorrect,
@@ -157,7 +140,6 @@ export function handleAnswerSelect(q, selectedKey) {
       state.sessionData.mistakes.push(q.id);
     }
   } else {
-    // Remove from mistakes if now answered correctly
     state.sessionData.mistakes = state.sessionData.mistakes.filter(id => id !== q.id);
   }
 
@@ -165,7 +147,6 @@ export function handleAnswerSelect(q, selectedKey) {
   updateBadgesCounts();
   updateStatsDisplay();
 
-  // Update Buttons with animation and clear status tags
   const allBtns = elAnswers.querySelectorAll('.answer-btn');
   allBtns.forEach(btn => {
     btn.disabled = true;
@@ -190,10 +171,8 @@ export function handleAnswerSelect(q, selectedKey) {
     }
   });
 
-  // Feedback banner with explicit correct answer display
   showFeedbackBanner(q, isCorrect, selectedKey);
 
-  // Pulse next button to invite advancement
   elBtnNext.classList.add('pulse');
 }
 
@@ -237,9 +216,6 @@ export function showFeedbackBanner(q, isCorrect, selectedKey) {
   }
 }
 
-// ==========================================================================
-// Navigation & Progress
-// ==========================================================================
 export function goToNext() {
   if (state.activePointer < state.activeList.length - 1) {
     state.activePointer++;
@@ -267,7 +243,6 @@ export function updateProgressBar() {
   const total = state.activeList.length;
   const currentNum = total > 0 ? state.activePointer + 1 : 0;
 
-  // Count how many answered in current list
   let answeredCount = 0;
   state.activeList.forEach(idx => {
     const q = state.rawQuestions[idx];

@@ -4,11 +4,7 @@ import {
   elMediaFallback, elMediaFallbackText
 } from './dom.js';
 
-// ==========================================================================
-// Media Rendering (video / image, with CDN → local-folder fallback chain)
-// ==========================================================================
 export function renderMedia(q) {
-  // Reset video state
   elVideo.pause();
   elVideo.removeAttribute('src');
   elVideo.load();
@@ -44,10 +40,9 @@ export function renderMedia(q) {
 
     elVideo.src = cdnUrl;
 
-    // Auto play video muted on first appearance
     elVideo.muted = true;
     elVideo.play().catch(() => {
-      // Autoplay policy might block unmuted or first load, normal behavior
+      // Autoplay policy may block playback on first load — not an error
     });
 
   } else if (q.mediaType === 'image') {

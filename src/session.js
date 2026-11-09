@@ -1,8 +1,5 @@
 import { state } from './state.js';
 
-// ==========================================================================
-// Session Persistence (localStorage, scoped per category via state.storageKey)
-// ==========================================================================
 export function loadSessionData() {
   try {
     const saved = localStorage.getItem(state.storageKey);
@@ -13,10 +10,10 @@ export function loadSessionData() {
     console.warn('Could not load session data:', e);
   }
   return {
-    answers: {}, // questionId -> { selected: string, isCorrect: boolean }
-    mistakes: [], // list of questionIds
+    answers: {},
+    mistakes: [],
     lastPointer: 0,
-    examHistory: [] // array of past exams' question-id arrays, most recent last
+    examHistory: []
   };
 }
 

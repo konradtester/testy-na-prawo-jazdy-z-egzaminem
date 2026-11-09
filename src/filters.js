@@ -1,9 +1,6 @@
 import { state } from './state.js';
 import { elCountAll, elCountBasic, elCountSpecial, elCountMistakes, elFilterBtns, elJumpInput } from './dom.js';
 
-// ==========================================================================
-// Filtering & Ordering
-// ==========================================================================
 export function updateBadgesCounts() {
   const basicCount = state.rawQuestions.filter(q => q.scope === 'podstawowy').length;
   const specialCount = state.rawQuestions.filter(q => q.scope === 'specjalistyczny').length;
@@ -18,7 +15,6 @@ export function updateBadgesCounts() {
 export function applyFilter(filterName) {
   state.currentFilter = filterName;
 
-  // Filter indices
   let filteredIndices = [];
   state.rawQuestions.forEach((q, idx) => {
     if (filterName === 'all') {
@@ -41,7 +37,6 @@ export function applyFilter(filterName) {
   state.activeList = filteredIndices;
   state.activePointer = 0;
 
-  // Update UI active filter button
   elFilterBtns.forEach(btn => {
     if (btn.dataset.filter === filterName) {
       btn.classList.add('active');

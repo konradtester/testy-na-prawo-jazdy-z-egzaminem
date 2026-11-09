@@ -11,24 +11,18 @@ import { applyFilter } from './filters.js';
 import { startExam, finishExam, exitExamToTestMode } from './exam.js';
 import { handleGlobalKeydown } from './shortcuts.js';
 
-// ==========================================================================
-// Event Listener Wiring (attached once, after the first category loads)
-// ==========================================================================
 export function attachEventListeners() {
   if (state.listenersAttached) return;
   state.listenersAttached = true;
 
-  // Next / Prev buttons
   elBtnPrev.addEventListener('click', goToPrev);
   elBtnNext.addEventListener('click', goToNext);
 
-  // Replay video
   elBtnReplay.addEventListener('click', () => {
     elVideo.currentTime = 0;
     elVideo.play().catch(() => {});
   });
 
-  // Image Zoom modal
   elImage.addEventListener('click', () => {
     elModalImg.src = elImage.src;
     elModal.classList.remove('hidden');
@@ -44,7 +38,6 @@ export function attachEventListeners() {
     }
   });
 
-  // Filter Buttons
   elFilterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       applyFilter(btn.dataset.filter);
@@ -52,7 +45,6 @@ export function attachEventListeners() {
     });
   });
 
-  // Shuffle Button
   elBtnShuffle.addEventListener('click', () => {
     state.isShuffled = !state.isShuffled;
     if (state.isShuffled) {
@@ -66,7 +58,6 @@ export function attachEventListeners() {
     renderCurrentQuestion();
   });
 
-  // Jump Button
   elJumpBtn.addEventListener('click', () => {
     const val = parseInt(elJumpInput.value, 10);
     jumpToPosition(val);
@@ -79,10 +70,8 @@ export function attachEventListeners() {
     }
   });
 
-  // Reset Button
   elBtnReset.addEventListener('click', resetSessionStats);
 
-  // Exam Mode
   elBtnStartExam.addEventListener('click', startExam);
 
   elBtnExitExam.addEventListener('click', () => {
@@ -100,6 +89,5 @@ export function attachEventListeners() {
 
   elBtnExamExit.addEventListener('click', exitExamToTestMode);
 
-  // Keyboard Shortcuts
   window.addEventListener('keydown', handleGlobalKeydown);
 }
