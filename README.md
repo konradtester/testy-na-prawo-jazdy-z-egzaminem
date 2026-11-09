@@ -214,3 +214,17 @@ npm run stop:windows
 Projekt jest udostępniony na licencji **GNU Affero General Public License v3.0 (AGPLv3)** — zob. plik [`LICENSE`](LICENSE).
 
 W skrócie: możesz dowolnie korzystać, kopiować i modyfikować ten kod, także do celów komercyjnych. Jednak jeśli udostępnisz go innym (również jako usługę sieciową / webapp, bez samej "dystrybucji" plików), musisz udostępnić pełny kod źródłowy swojej wersji na tych samych warunkach. Oznacza to, że nikt nie może zrobić z tego projektu zamkniętej, płatnej wersji.
+
+---
+
+## Disclaimer
+
+To jest **prywatny projekt hobbystyczny**, udostępniony publicznie bez żadnych zobowiązań. Zgodnie z licencją AGPLv3 (sekcje 15–16 pliku [`LICENSE`](LICENSE)) oprogramowanie jest dostarczane **"TAK JAK JEST", bez jakiejkolwiek gwarancji** — wyraźnej czy domyślnej, w tym m.in. gwarancji przydatności handlowej czy przydatności do konkretnego celu.
+
+W szczególności:
+- **Nie gwarantuję poprawności, aktualności ani kompletności pytań i odpowiedzi.** Baza jest wygenerowana z katalogu Ministerstwa Infrastruktury / WORD (`KATALOG_dla_kandydatów_na_kierowców_072026.xlsx`), ale mogą w niej wystąpić błędy — ludzkie, w źródłowym pliku, albo powstałe przy automatycznym przetwarzaniu (`build_dataset.py`).
+- Aplikacja **nie zastępuje** oficjalnych materiałów szkoleniowych, kursu w WORD/OSK ani samodzielnej weryfikacji wiedzy przed przystąpieniem do egzaminu państwowego.
+- Autor **nie odpowiada** za ewentualne niezaliczenie egzaminu, straty finansowe czy inne konsekwencje wynikające z korzystania z tej aplikacji.
+- Nie jest to usługa komercyjna z SLA, supportem czy gwarancją aktualizacji — to kod udostępniony "as-is", rozwijany w wolnym czasie.
+
+Jeśli potrzebujesz materiałów z gwarancją poprawności i wsparciem, skorzystaj z płatnych kursów/aplikacji oferowanych przez OSK lub firmy specjalizujące się w przygotowaniu do egzaminu.
