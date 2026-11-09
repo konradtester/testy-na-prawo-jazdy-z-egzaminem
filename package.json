@@ -5,9 +5,9 @@
   "main": "index.html",
   "scripts": {
     "start": "python3 -m http.server 8089",
-    "stop": "./stop.sh",
+    "stop": "./scripts/stop.sh",
     "start:windows": "python -m http.server 8089",
-    "stop:windows": "powershell -ExecutionPolicy Bypass -File ./stop.ps1"
+    "stop:windows": "powershell -ExecutionPolicy Bypass -File ./scripts/stop.ps1"
   },
   "keywords": [
     "prawo-jazdy",

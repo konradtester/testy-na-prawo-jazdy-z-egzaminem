@@ -1,4 +1,4 @@
-Set-Location -Path $PSScriptRoot
+Set-Location -Path (Join-Path $PSScriptRoot "..")
 Write-Host "Uruchamianie aplikacji Testy Prawo Jazdy..."
 Write-Host "Otworz przegladarke pod adresem: http://localhost:8089/index.html"
 

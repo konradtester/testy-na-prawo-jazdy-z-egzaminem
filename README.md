@@ -2,7 +2,30 @@
 
 Aplikacja do prostej, szybkiej nauki i weryfikacji pytań egzaminacyjnych na prawo jazdy (ogólne i specjalistyczne) na podstawie oficjalnego katalogu Ministerstwa Infrastruktury / WORD: `KATALOG_dla_kandydatów_na_kierowców_072026.xlsx`.
 
-Aplikacja działa w przeglądarce (czysty HTML/CSS/JS, bez frameworków i bez instalacji żadnych bibliotek) — potrzebny jest tylko lokalny serwer, który poprawnie obsłuży pliki wideo/obrazy. Baza pytań jest już wygenerowana i wgrana do repozytorium (`questions_kat_*.js/json`), więc do samego korzystania z testów **nie musisz** uruchamiać `build_dataset.py` — ten skrypt jest potrzebny tylko, jeśli chcesz samodzielnie odtworzyć bazę z pliku `.xlsx` (np. po jego aktualizacji).
+Aplikacja działa w przeglądarce (czysty HTML/CSS/JS w postaci natywnych modułów ES, bez frameworków i bez instalacji żadnych bibliotek) — potrzebny jest tylko lokalny serwer, który poprawnie obsłuży pliki wideo/obrazy. Baza pytań jest już wygenerowana i wgrana do repozytorium (`data/questions_kat_*.js/json`), więc do samego korzystania z testów **nie musisz** uruchamiać `scripts/build_dataset.py` — ten skrypt jest potrzebny tylko, jeśli chcesz samodzielnie odtworzyć bazę z pliku `.xlsx` (np. po jego aktualizacji).
+
+### Struktura projektu
+```
+testy/
+├── index.html          # Punkt wejścia — otwierany w przeglądarce
+├── css/
+│   └── style.css       # Wszystkie style
+├── src/                # Logika aplikacji (moduły ES, każdy ma jedną odpowiedzialność)
+│   ├── app.js           # Entry point — uruchamia ekran wyboru kategorii
+│   ├── state.js         # Stałe (kategorie, plan egzaminu) + współdzielony stan
+│   ├── dom.js           # Referencje do elementów DOM
+│   ├── categories.js    # Ekran wyboru kategorii, dynamiczne ładowanie bazy pytań
+│   ├── session.js       # Zapis/odczyt postępów w localStorage
+│   ├── filters.js       # Filtrowanie i losowanie pytań
+│   ├── media.js         # Renderowanie wideo/zdjęć (CDN → lokalny fallback)
+│   ├── test-mode.js     # Tryb Testy: render pytania, odpowiedzi, nawigacja, statystyki
+│   ├── exam.js          # Tryb Egzamin: losowanie zestawu, timer, wynik końcowy
+│   ├── shortcuts.js     # Skróty klawiaturowe
+│   └── events.js        # Podłączenie wszystkich listenerów do przycisków
+├── data/                # Wygenerowane bazy pytań (questions_kat_*.js/json)
+├── assets/              # Oryginalny katalog MI/WORD (.xlsx)
+└── scripts/             # build_dataset.py, start/stop (sh + PowerShell)
+```
 
 ## Kategorie
 Po otwarciu aplikacji wybierasz kategorię prawa jazdy, dla której chcesz się uczyć:
@@ -17,7 +40,7 @@ Po otwarciu aplikacji wybierasz kategorię prawa jazdy, dla której chcesz się 
 
 Postępy i statystyki są zapisywane osobno dla każdej kategorii. W każdej chwili można zmienić kategorię przyciskiem "Zmień kategorię" w górnym pasku.
 
-Aby dodać kolejną kategorię (np. C, D, T), dopisz jej kod do listy `CATEGORIES` w `build_dataset.py` oraz w `app.js` i uruchom ponownie `python3 build_dataset.py`.
+Aby dodać kolejną kategorię (np. C, D, T), dopisz jej kod do listy `CATEGORIES` w `scripts/build_dataset.py` oraz w `src/state.js` i uruchom ponownie `python3 scripts/build_dataset.py`.
 
 ## Tryb Testy vs. Tryb Egzamin
 - **Tryb Testy** (domyślny): swobodna nauka — natychmiastowy feedback po każdej odpowiedzi, filtry, losowanie, skok do dowolnego pytania, bez limitu czasu.
@@ -126,7 +149,7 @@ Najwygodniej jest użyć **PowerShell** (wbudowany w Windows, dostępny z menu S
 
 **Opcja 1 (skrypt pomocniczy — zalecane):**
 ```bash
-./start.sh
+./scripts/start.sh
 ```
 
 **Opcja 2 (Python bezpośrednio):**
@@ -145,11 +168,11 @@ Aplikacja jest dostępna pod adresem: **http://localhost:8089/index.html**
 
 **Opcja 1 (skrypt pomocniczy — zalecane):**
 ```powershell
-.\start.ps1
+.\scripts\start.ps1
 ```
 Jeśli PowerShell odmówi uruchomienia skryptu (polityka wykonywania), użyj:
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\start.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\start.ps1
 ```
 
 **Opcja 2 (Python bezpośrednio):**
@@ -177,7 +200,7 @@ Ctrl + C
 
 **Opcja 2 (skryptem z dowolnego terminala):**
 ```bash
-./stop.sh
+./scripts/stop.sh
 ```
 
 **Opcja 3 (NPM):**
@@ -199,7 +222,7 @@ Ctrl + C
 
 **Opcja 2 (skryptem z dowolnego terminala):**
 ```powershell
-.\stop.ps1
+.\scripts\stop.ps1
 ```
 
 **Opcja 3 (NPM):**
@@ -222,7 +245,7 @@ W skrócie: możesz dowolnie korzystać, kopiować i modyfikować ten kod, takż
 To jest **prywatny projekt hobbystyczny**, udostępniony publicznie bez żadnych zobowiązań. Zgodnie z licencją AGPLv3 (sekcje 15–16 pliku [`LICENSE`](LICENSE)) oprogramowanie jest dostarczane **"TAK JAK JEST", bez jakiejkolwiek gwarancji** — wyraźnej czy domyślnej, w tym m.in. gwarancji przydatności handlowej czy przydatności do konkretnego celu.
 
 W szczególności:
-- **Nie gwarantuję poprawności, aktualności ani kompletności pytań i odpowiedzi.** Baza jest wygenerowana z katalogu Ministerstwa Infrastruktury / WORD (`KATALOG_dla_kandydatów_na_kierowców_072026.xlsx`), ale mogą w niej wystąpić błędy — ludzkie, w źródłowym pliku, albo powstałe przy automatycznym przetwarzaniu (`build_dataset.py`).
+- **Nie gwarantuję poprawności, aktualności ani kompletności pytań i odpowiedzi.** Baza jest wygenerowana z katalogu Ministerstwa Infrastruktury / WORD (`assets/KATALOG_dla_kandydatów_na_kierowców_072026.xlsx`), ale mogą w niej wystąpić błędy — ludzkie, w źródłowym pliku, albo powstałe przy automatycznym przetwarzaniu (`scripts/build_dataset.py`).
 - Aplikacja **nie zastępuje** oficjalnych materiałów szkoleniowych, kursu w WORD/OSK ani samodzielnej weryfikacji wiedzy przed przystąpieniem do egzaminu państwowego.
 - Autor **nie odpowiada** za ewentualne niezaliczenie egzaminu, straty finansowe czy inne konsekwencje wynikające z korzystania z tej aplikacji.
 - Nie jest to usługa komercyjna z SLA, supportem czy gwarancją aktualizacji — to kod udostępniony "as-is", rozwijany w wolnym czasie.
