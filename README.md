@@ -2,6 +2,8 @@
 
 Aplikacja do prostej, szybkiej nauki i weryfikacji pytań egzaminacyjnych na prawo jazdy (ogólne i specjalistyczne) na podstawie oficjalnego katalogu Ministerstwa Infrastruktury / WORD: `KATALOG_dla_kandydatów_na_kierowców_072026.xlsx`.
 
+Aplikacja działa w przeglądarce (czysty HTML/CSS/JS, bez frameworków i bez instalacji żadnych bibliotek) — potrzebny jest tylko lokalny serwer, który poprawnie obsłuży pliki wideo/obrazy. Baza pytań jest już wygenerowana i wgrana do repozytorium (`questions_kat_*.js/json`), więc do samego korzystania z testów **nie musisz** uruchamiać `build_dataset.py` — ten skrypt jest potrzebny tylko, jeśli chcesz samodzielnie odtworzyć bazę z pliku `.xlsx` (np. po jego aktualizacji).
+
 ## Kategorie
 Po otwarciu aplikacji wybierasz kategorię prawa jazdy, dla której chcesz się uczyć:
 
@@ -55,47 +57,154 @@ Aby dodać kolejną kategorię (np. C, D, T), dopisz jej kod do listy `CATEGORIE
 - `Spacja` / `Enter` / `→` (strzałka w prawo) – **Następne pytanie**
 - `←` (strzałka w lewo) – **Poprzednie pytanie**
 
+## Wymagania i instalacja zależności
+
+Aplikacja nie potrzebuje żadnych bibliotek — wystarczy zainstalować **Python 3**, który służy jedynie do odpalenia prostego serwera plików (`http.server`). Node.js / npm jest **opcjonalny** — potrzebny tylko, jeśli wolisz uruchamiać serwer komendą `npm start` zamiast Pythona.
+
+### macOS
+
+1. **Python 3** — najczęściej jest już zainstalowany. Sprawdź w Terminalu:
+   ```bash
+   python3 --version
+   ```
+   Jeśli pojawi się błąd, zainstaluj go przez [Homebrew](https://brew.sh):
+   ```bash
+   brew install python
+   ```
+   albo pobierz instalator z [python.org/downloads](https://www.python.org/downloads/macos/).
+
+2. **Node.js / npm** (opcjonalnie, tylko dla komend `npm start` / `npm run stop`):
+   ```bash
+   brew install node
+   ```
+   albo pobierz instalator z [nodejs.org](https://nodejs.org/) (wersja LTS). Sprawdzenie instalacji:
+   ```bash
+   node --version
+   npm --version
+   ```
+
+### Windows
+
+Najwygodniej jest użyć **PowerShell** (wbudowany w Windows, dostępny z menu Start — wpisz "PowerShell").
+
+1. **Python 3**:
+   - Pobierz instalator z [python.org/downloads](https://www.python.org/downloads/) (przycisk "Download Python") **albo** zainstaluj z Microsoft Store, wyszukując "Python 3.12" (lub nowszy).
+   - **Ważne:** podczas instalacji z python.org zaznacz checkbox **"Add python.exe to PATH"** na pierwszym ekranie instalatora — bez tego komenda `python` nie zadziała w terminalu.
+   - Sprawdzenie instalacji w PowerShell:
+     ```powershell
+     python --version
+     ```
+     Jeśli to nie zadziała, spróbuj:
+     ```powershell
+     py --version
+     ```
+
+2. **Node.js / npm** (opcjonalnie):
+   - Pobierz i zainstaluj wersję LTS z [nodejs.org](https://nodejs.org/) (instalator `.msi`, kliknij "Next" przez cały proces — domyślne ustawienia są OK, npm instaluje się automatycznie razem z Node.js).
+   - Sprawdzenie instalacji w PowerShell:
+     ```powershell
+     node --version
+     npm --version
+     ```
+   - Jeśli PowerShell zgłasza błąd, że uruchamianie skryptów jest zablokowane (`running scripts is disabled on this system`), uruchom PowerShell jako zwykły użytkownik i wykonaj jednorazowo:
+     ```powershell
+     Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+     ```
+
+3. **Pobranie projektu**: jeśli masz Git for Windows, w PowerShell:
+   ```powershell
+   git clone <adres-repozytorium>
+   cd testy
+   ```
+   Można też po prostu pobrać repozytorium jako plik `.zip` (przycisk "Code" → "Download ZIP") i rozpakować.
+
+---
+
 ## Uruchamianie serwera
 
-### Opcja 1 (skrypt pomocniczy - zalecane):
+### macOS / Linux
+
+**Opcja 1 (skrypt pomocniczy — zalecane):**
 ```bash
 ./start.sh
 ```
-Aplikacja jest dostępna pod adresem: **http://localhost:8089/index.html**
 
-### Opcja 2 (Python bezpośrednio):
+**Opcja 2 (Python bezpośrednio):**
 ```bash
 python3 -m http.server 8089
 ```
 
-### Opcja 3 (NPM):
+**Opcja 3 (NPM):**
 ```bash
 npm start
 ```
+
+Aplikacja jest dostępna pod adresem: **http://localhost:8089/index.html**
+
+### Windows (PowerShell)
+
+**Opcja 1 (skrypt pomocniczy — zalecane):**
+```powershell
+.\start.ps1
+```
+Jeśli PowerShell odmówi uruchomienia skryptu (polityka wykonywania), użyj:
+```powershell
+powershell -ExecutionPolicy Bypass -File .\start.ps1
+```
+
+**Opcja 2 (Python bezpośrednio):**
+```powershell
+python -m http.server 8089
+```
+
+**Opcja 3 (NPM):**
+```powershell
+npm run start:windows
+```
+
+Aplikacja jest dostępna pod adresem: **http://localhost:8089/index.html**
 
 ---
 
 ## Zatrzymywanie serwera
 
-### Opcja 1 (w oknie terminala, w którym działa serwer):
-Naciśnij kombinację klawiszy:
+### macOS / Linux
+
+**Opcja 1 (w oknie terminala, w którym działa serwer):**
 ```text
 Ctrl + C
 ```
 
-### Opcja 2 (skryptem z dowolnego terminala):
+**Opcja 2 (skryptem z dowolnego terminala):**
 ```bash
 ./stop.sh
 ```
 
-### Opcja 3 (NPM):
+**Opcja 3 (NPM):**
 ```bash
 npm run stop
 ```
 
-### Opcja 4 (ręcznie komendą w terminalu):
+**Opcja 4 (ręcznie komendą w terminalu):**
 ```bash
 kill $(lsof -t -i :8089)
+```
+
+### Windows (PowerShell)
+
+**Opcja 1 (w oknie terminala, w którym działa serwer):**
+```text
+Ctrl + C
+```
+
+**Opcja 2 (skryptem z dowolnego terminala):**
+```powershell
+.\stop.ps1
+```
+
+**Opcja 3 (NPM):**
+```powershell
+npm run stop:windows
 ```
 
 ---
